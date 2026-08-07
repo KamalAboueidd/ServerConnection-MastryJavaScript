@@ -9,3 +9,12 @@
       console.log("computer sience is the best field in the world 3"); // 3
  })
  console.log("computer sience is the best field in the world 4");  //2 
+
+// Output:
+// computer sience is the best field in the world 1
+// computer sience is the best field in the world 4
+// computer sience is the best field in the world 3
+// computer sience is the best field in the world 2
+
+
+console.log("*".repeat(30));

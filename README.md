@@ -116,3 +116,109 @@ async function getProductData(productId) {
 getProductData(101);
 
 ```
+
+# Section 3: HTTP Protocol & Web APIs Fundamentals
+
+Communication between Client (Frontend) and Server (Backend) relies on the **HTTP (Hypertext Transfer Protocol)** architecture based on Requests and Responses.
+
+---
+
+## 1. Structure of an HTTP Request
+
+An HTTP Request consists of four core building blocks:
+
+1. **Endpoint / URL:** The target address hosted on the server.
+2. **HTTP Methods:**
+   * **`GET`:** Retrieves resources (No request body).
+   * **`POST`:** Creates new resources.
+   * **`PUT`:** Completely replaces an existing resource.
+   * **`PATCH`:** Partially updates an existing resource.
+   * **`DELETE`:** Removes a resource.
+3. **Headers:** Metadata key-value pairs (e.g., `Content-Type: application/json`, `Authorization: Bearer <token>`).
+4. **Body (Payload):** Raw data sent to the server (used in `POST`, `PUT`, `PATCH`).
+
+---
+
+## 2. HTTP Response Status Codes
+
+Server responses return a 3-digit status code classifying the result:
+
+* **`2xx` (Success):** `200 OK` (Successful request), `201 Created` (Resource created).
+* **`3xx` (Redirection):** `301 Moved Permanently`, `304 Not Modified`.
+* **`4xx` (Client Errors):** 
+  * `400 Bad Request` (Invalid payload)
+  * `401 Unauthorized` (Unauthenticated user)
+  * `403 Forbidden` (Authenticated but lacks permissions)
+  * `404 Not Found` (Endpoint does not exist)
+* **`5xx` (Server Errors):** `500 Internal Server Error`, `503 Service Unavailable`.
+
+---
+
+## 3. Data Serialization (JSON)
+
+Data transmitted across the network must be formatted as plain text strings.
+
+* **`JSON.stringify(obj)`:** Converts a JavaScript Object into a JSON-formatted String before transmission.
+* **`JSON.parse(str)`:** Converts an incoming JSON String back into a usable JavaScript Object.
+
+---
+
+## 4. Fully Documented Code Example
+
+The following code illustrates proper HTTP handling, request configuration, status checking, and error isolation:
+
+```javascript
+// HTTP connection server example
+console.log("HTTP connection server example");
+
+async function createConnection() {
+  const endPoint = "[https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicode.com/users)";
+
+  try {
+    // 1. Dispatching HTTP POST Request
+    const response = await fetch(endPoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // Informs server of JSON payload
+        "Accept": "application/json",        // Requests JSON response
+        "Authorization": "Bearer MockToken",  // Authentication token header
+      },
+      // Serialization: Converting JS Object to JSON String
+      body: JSON.stringify({
+        name: "Kamal Abou eid",
+        email: "kamal@example.com",
+        role: "Software Engineer",
+      }),
+    });
+
+    console.log("Http response status : ", response.status);
+
+    // 2. Isolating HTTP Failure Cases (Non-2xx status codes)
+    if (!response.ok) {
+      if (response.status === 400) console.error("Bad Request");
+      else if (response.status === 401) console.error("Unauthorized");
+      else if (response.status === 403) console.error("Forbidden");
+      else if (response.status === 404) console.error("Not Found");
+      else if (response.status >= 500) console.error("Internal Server Error");
+
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    // 3. Handling Success Response (Executes only if response.ok is true)
+    const data = await response.json(); // Parsing JSON string to JS Object
+    console.log("User Created Successfully: ", data);
+
+    return data;
+
+  } catch (error) {
+    // Catching Network Failures & Explicitly Thrown HTTP Errors
+    console.error("Registration failed: ", error.message);
+  }
+}
+
+// Execution
+createConnection();
+
+![HTTP](Httpj.png)
+![HTTP](HTTP2.png)
+![HTTP](HTTP3.png)
