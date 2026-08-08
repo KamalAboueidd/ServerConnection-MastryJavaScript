@@ -223,3 +223,148 @@ createConnection();
 ![HTTP](Httpj.png)
 ![HTTP](HTTP2.png)
 ![HTTP](HTTP3.png)
+![alt text](image.png)
+
+# Module 4: The 3 Data Fetching Tools Deep Dive
+
+This section covers the evolution of HTTP data fetching in JavaScript—from early legacy patterns to modern standards and industry-grade libraries—along with critical edge cases asked in technical interviews.
+
+---
+
+## 1. Architectural Comparison Matrix
+
+| Feature | XMLHttpRequest (XHR) | Fetch API | Axios |
+| :--- | :--- | :--- | :--- |
+| **Type** | Native Legacy API | Native Modern Standard | Third-Party Library (`npm`) |
+| **Model** | Event-driven (Callbacks) | Promises (`async/await`) | Promises (`async/await`) |
+| **JSON Parsing** | Manual (`JSON.parse`) | Manual (`await res.json()`) | **Automatic** (`res.data`) |
+| **HTTP Errors (404/500)** | Manual check (`xhr.status`) | **Does NOT Reject** (Requires `res.ok`) | **Automatically Rejects** |
+| **Interceptors** | Not Supported | Not Supported Natively | **Supported (Request/Response)** |
+| **Cancellation** | `xhr.abort()` | `AbortController` | `AbortController` / `CancelToken` |
+ ![XMMlAxiosFetch](Httpj.png)
+---
+
+## 2. Implementation Code Breakdown
+
+### Option A: XMLHttpRequest (Legacy Event-driven)
+
+```javascript
+function fetchWithXHR(url) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", url);
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      const data = JSON.parse(xhr.responseText); // Manual Parsing
+      console.log("XHR Data:", data);
+    } else {
+      console.error("Server Error:", xhr.status);
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error("Network Failure!");
+  };
+
+  xhr.send();
+}
+```
+   ---- Fetch Api (Native Promise Based)
+```js 
+async function fetchWithNativeAPI(url) {
+  try {
+    const response = await fetch(url);
+
+    // Critical: Fetch does NOT reject on 404/500 errors!
+    if (!response.ok) {
+      throw new Error(`HTTP Error Status: ${response.status}`);
+    }
+
+    const data = await response.json(); // Explicit JSON Parsing
+    console.log("Fetch Data:", data);
+    return data;
+
+  } catch (error) {
+    console.error("Fetch Operation Failed:", error.message);
+  }
+}
+```
+ ----->Axios 
+```js 
+import axios from 'axios';
+
+async function fetchWithAxios(url) {
+  try {
+    // Payload is auto-parsed and directly accessible under response.data
+    const response = await axios.get(url);
+    console.log("Axios Data:", response.data);
+    return response.data;
+
+  } catch (error) {
+    // Non-2xx status codes reject automatically and land here
+    if (error.response) {
+      console.error(`HTTP Error Status: ${error.response.status}`);
+    } else {
+      console.error("Network Error:", error.message);
+    }
+  }
+}
+```
+
+-   ## High-Frequency Interview Topics
+-- Topic 1: The Fetch Promise Rejection Trap
+Question: Why doesn't a 404 Not Found or 500 Server Error trigger the .catch() block when using fetch()?
+
+Explanation: The native fetch() API only rejects its promise on Network Failures (e.g., total loss of connectivity, invalid domain name, blocked CORS).
+
+An HTTP response with a 404 or 500 status code is still considered a successful HTTP communication cycle by the browser engine, resolving the promise.
+
+Solution: Manually inspect the boolean property response.ok (true for status codes in range 200–299) and throw a custom error to force rejection if necessary.
+
+Topic 2: Interceptors Pattern (Axios)
+Question: What are Interceptors, and why are they used in enterprise applications?
+
+Interceptors act as middleware layers sitting between your application and the server. They catch outgoing Requests before transmission and incoming Responses before execution
+
+```js 
+[ Application ] ---> [ Request Interceptor ] ---> [ Server ]
+[ Application ] <--- [ Response Interceptor ] <--- [ Server ]
+```
+
+- # Primary Use Cases:
+ - Centralized Authorization: Injecting JWT Tokens into request headers globally without duplicating code.
+
+ - Global Error Handling: Intercepting 401 Unauthorized responses to purge session storage and automatically redirect users to /login.
+
+ - Global Loading Indicators: Triggering UI spinners on request start and hiding them on response completion.
+
+``` js
+import axios from 'axios';
+
+// 1. Request Interceptor: Attach Auth Token
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 2. Response Interceptor: Global 401 Handling
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn('Unauthorized! Redirecting to login...');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+![AXIOSFetch](FetchAxios.png)
+![AXIOSFetch](xmlH.png)
