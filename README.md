@@ -167,7 +167,7 @@ Data transmitted across the network must be formatted as plain text strings.
 
 The following code illustrates proper HTTP handling, request configuration, status checking, and error isolation:
 
-```javascript
+```js
 // HTTP connection server example
 console.log("HTTP connection server example");
 
@@ -218,6 +218,7 @@ async function createConnection() {
 
 // Execution
 createConnection();
+```
 
 ![HTTP](Httpj.png)
 ![HTTP](HTTP2.png)
