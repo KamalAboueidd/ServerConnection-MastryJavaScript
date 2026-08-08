@@ -223,7 +223,7 @@ createConnection();
 ![HTTP](Httpj.png)
 ![HTTP](HTTP2.png)
 ![HTTP](HTTP3.png)
-![alt text](image.png)
+
 
 # Module 4: The 3 Data Fetching Tools Deep Dive
 
@@ -241,10 +241,9 @@ This section covers the evolution of HTTP data fetching in JavaScript—from ear
 | **HTTP Errors (404/500)** | Manual check (`xhr.status`) | **Does NOT Reject** (Requires `res.ok`) | **Automatically Rejects** |
 | **Interceptors** | Not Supported | Not Supported Natively | **Supported (Request/Response)** |
 | **Cancellation** | `xhr.abort()` | `AbortController` | `AbortController` / `CancelToken` |
- ![XMMlAxiosFetch](Httpj.png)
 ---
 
-## 2. Implementation Code Breakdown
+## 2. Implementation Code 
 
 ### Option A: XMLHttpRequest (Legacy Event-driven)
 
@@ -367,4 +366,3 @@ axios.interceptors.response.use(
 ```
 
 ![AXIOSFetch](FetchAxios.png)
-![AXIOSFetch](xmlH.png)
