@@ -637,4 +637,54 @@ async function fetchFromFastestCDN() {
 
 fetchFromFastestCDN();
 ```
-![Advanced Promsie](AdvancedPromise.jpg)
+![Advanced Promsie](AdvancedPromise.jpg) 
+
+
+ ##  AbortController (Request Cancellation) with Search Inputs 
+   - controller.signal 
+   - controller.abort
+
+   #### RaceCondition ==>  Solution: `AbortController`
+`AbortController` is a built-in Web API that allows us to abort one or more HTTP requests on demand at the browser network layer.
+
+* **`controller.signal`**: Passed as an option to `fetch` to listen for abort signals.
+* **`controller.abort()`**: Triggers the cancellation signal.
+* **`AbortError`**: The specific error name caught in the `catch` block when a request is cancelled.
+
+---
+
+# Example: Auto-Cancelling Search Requests
+
+```js
+let currentController = null;
+
+function handleSearchInput(searchTerm) {
+  // 1. Cancel previous pending request if it exists
+  if (currentController) {
+    currentController.abort();
+  }
+
+  // 2. Instantiate a new AbortController for the current request
+  currentController = new AbortController();
+ 
+  fetch(`[https://api.example.com/search?q=$](https://api.example.com/search?q=$){searchTerm}`, {
+    signal: currentController.signal
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('✅ Search Results:', data);
+    })
+    .catch((error) => {
+      // 3. Gracefully handle AbortError without alerting the user
+      if (error.name === 'AbortError') {
+        console.log(` Previous request cancelled for term: "${searchTerm}"`);
+      } else {
+        console.error(' Network Error:', error.message);
+      }
+    });
+}
+
+// Simulation of fast user typing
+handleSearchInput('K');     // Cancelled immediately
+handleSearchInput('Ka');    // Cancelled immediately
+handleSearchInput('Kamal'); // Successfully resolves
