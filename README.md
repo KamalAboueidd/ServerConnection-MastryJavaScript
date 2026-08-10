@@ -510,3 +510,131 @@ By default, web browsers enforce the **Same-Origin Policy**. This restricts a sc
 * **Response Masking:** In a failed CORS scenario, the HTTP request actually completes at the network layer; the browser simply prevents client-side code from reading the payload.
 
 ![CORS](CROSS.png)
+
+## Module 5 --> Advanced Real world patterns 
+          ---  Promise().all   ----
+ - All or Nothing -> tak an array of promise and wait untill all of them to success .
+ and the result return an array have the result of the all promises in the same order 
+ if one of the prpmises fail (reject) , promise().all confilict and go to catch and ignore the other promise even if success . 
+
+ ```js 
+
+const fetchUserData = () => 
+  new Promise((resolve) => setTimeout(() => resolve({ id: 1, name: "Kamal" }), 1000));
+
+const fetchUserOrders = () => 
+  new Promise((resolve) => setTimeout(() => resolve(["Order #101", "Order #102"]), 2000));
+
+const fetchUserNotifications = () => 
+  new Promise((resolve) => setTimeout(() => resolve(["Welcome back!" ]), 1500));
+
+
+// 2.Promise.all
+async function loadDashboard() {
+  try {
+    console.time("⏱ Dashboard Loading Time");
+
+    
+    // make a destructring in the same order . 
+    const [user, orders, notifications] = await Promise.all([
+      fetchUserData(),
+      fetchUserOrders(),
+      fetchUserNotifications()
+    ]);
+
+    console.log(" User:", user);
+    console.log(" Orders:", orders);
+    console.log(" Notifications:", notifications);
+
+    console.timeEnd(" Dashboard Loading Time"); 
+
+  } catch (error) {
+     // if at least one have confilct all will go to catch , nothing execute .
+    console.error(" Dashboard Failed to Load:", error);
+  }
+}
+
+loadDashboard();
+```
+    --- promise.allSettled ----
+   - Safe Execution & Audit Report -> takes an array of promises and waits until all of them settle (finish), whether they resolve or reject.
+
+ - Never goes to catch! Returns an array of objects describing the state of each promise (status: 'fulfilled' with value, or status: 'rejected' with reason).
+
+ ```js 
+const fetchUserProfile = () => 
+  new Promise((resolve) => setTimeout(() => resolve("User Profile Loaded"), 1000));
+
+const fetchAnalytics = () => 
+  new Promise((_, reject) => setTimeout(() => reject("Analytics Service Down"), 1500));
+
+async function loadDashboardSafely() {
+  // Always resolves, never triggers catch block
+  const results = await Promise.allSettled([
+    fetchUserProfile(),
+    fetchAnalytics()
+  ]);
+
+  console.log(results);
+  /*
+  [
+    { status: 'fulfilled', value: 'User Profile Loaded' },
+    { status: 'rejected', reason: 'Analytics Service Down' }
+  ]
+  */
+}
+
+loadDashboardSafely();
+```
+
+       --------- Promise().race  ------------
+- First Settled Wins -> takes an array of promises and settles as soon as the first promise finishes (whether it resolves or rejects).
+- Used for setting request timeouts.
+
+```js
+const fetchData = () => 
+  new Promise((resolve) => setTimeout(() => reject("Data Fetched"), 2000));
+
+const timeout = () => 
+  new Promise((_, reject) => setTimeout(() => reject("⌛ Request Timeout!"), 1500));
+
+async function fetchWithTimeout() {
+  try {
+    // Whichever finishes first wins the race
+    const result = await Promise.race([fetchData(), timeout()]);
+    console.log(result);
+  } catch (error) {
+    console.log("Race Failed:", error); //  Request Timeout! (because 1.5s < 2.0s)
+  }
+}
+
+fetchWithTimeout();
+```
+   ----- Promise.any -----
+  - First Success Wins -> takes an array of promises and returns the result of the first promise that succeeds (resolves), ignoring failures.
+
+ - Only goes to catch if ALL promises fail, throwing an AggregateError.
+
+ ```js 
+
+
+ const cdnServer1 = () => 
+  new Promise((_, reject) => setTimeout(() => reject("CDN 1 Down"), 500));
+
+const cdnServer2 = () => 
+  new Promise((resolve) => setTimeout(() => resolve("Fast Asset from CDN 2"), 1000));
+
+async function fetchFromFastestCDN() {
+  try {
+    // Ignores CDN 1 failure and takes the first success (CDN 2)
+    const result = await Promise.any([cdnServer1(), cdnServer2()]);
+    console.log("Success:", result); // Fast Asset from CDN 2
+  } catch (error) {
+    // Only executes if both CDN 1 and CDN 2 fail
+    console.error("All CDNs failed:", error.errors);
+  }
+}
+
+fetchFromFastestCDN();
+```
+![Advanced Promsie](AdvancedPromise.jpg)
