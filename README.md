@@ -697,7 +697,7 @@ handleSearchInput('Kamal'); // Successfully resolves
  ![Debouncing](Debounce.webp)
 
 
- # Module 5: Advanced Real-World Patterns
+ # Module 5: Refresh Tokens
 
 ---
 
