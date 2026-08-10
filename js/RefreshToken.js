@@ -7,7 +7,6 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
 // 2  with every request 
 api.interceptors.request.use(
   (config) => {
@@ -25,7 +24,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config; 
-      // _RETRAY  عامل زي استماره كد علشان نعلم كل ريسبونس هل انا حاولت قبل كده اني  اعمله اكسس توكن جديد وفشلت ؟ لو اه خلاص روح اعمل البروميس بتاع الايرورو لةو لاء نجينيريت ريفريش توكن 
+      
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; 
 
@@ -54,3 +53,10 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+
+
+
+
+
+// _RETRAY  عامل زي استماره كد علشان نعلم كل ريسبونس هل انا حاولت قبل كده اني  اعمله اكسس توكن جديد وفشلت ؟ لو اه خلاص روح اعمل البروميس بتاع الايرورو لةو لاء نجينيريت ريفريش توكن 

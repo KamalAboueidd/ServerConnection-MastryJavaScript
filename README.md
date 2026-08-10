@@ -695,3 +695,111 @@ handleSearchInput('Kamal'); // Successfully resolves
  - Debouncing is a way of delaying the execution of a function until a certain amount of time has passed since the last time it was called. This can be useful for scenarios where we want to avoid unnecessary or repeated function calls that might be expensive or time-consuming.
 
  ![Debouncing](Debounce.webp)
+
+
+ # Module 5: Advanced Real-World Patterns
+
+---
+
+## 1. Core Authentication Terms
+
+* **Access Token**: A short-lived JSON Web Token (JWT) sent with every API request via the `Authorization` header to prove identity.
+* **Refresh Token**: A long-lived, secure token used exclusively to fetch a new Access Token when the current one expires.
+* **Bearer**: An HTTP authentication scheme indicating that the holder of the token is authorized to access resources.
+* **HTTP 401 Unauthorized**: The error response code sent by the server when an Access Token is expired or invalid.
+* **Axios Interceptor**: A middleware function that intercepts API requests or responses before they are handled by `.then()` or `.catch()`.
+
+---
+
+## 2. Refresh Token Logic Flow
+
+1. **API Request Attempt**:
+   The application sends an HTTP request using the current Access Token.
+
+2. **Expiration Signal**:
+   The server rejects the request with a `401 Unauthorized` status because the Access Token has expired.
+
+3. **Interception & Stamping**:
+   The Response Interceptor catches the `401` error. It checks `originalRequest._retry`:
+   * If `undefined`: It sets `originalRequest._retry = true` to mark that a renewal attempt is underway.
+   * If `true`: It stops execution and rejects the Promise to avoid an infinite loop.
+
+4. **Silent Token Renewal**:
+   The interceptor sends a POST request to the `/refresh` endpoint with the stored Refresh Token to receive a fresh Access Token.
+
+5. **Transparent Retry**:
+   The new Access Token is saved, attached to `originalRequest.headers.Authorization`, and the original request is re-sent (`api(originalRequest)`).
+
+6. **Fallback Mechanism**:
+   If the Refresh Token itself is expired or invalid, all stored tokens are cleared and the user is redirected to the `/login` screen.
+
+---
+
+## 3. Production Code Implementation
+
+```js
+import axios from 'axios';
+
+// 1. Create Base Axios Instance
+const api = axios.create({
+  baseURL: '[https://api.example.com](https://api.example.com)',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 2. Request Interceptor: Attach Access Token to every outgoing request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 3. Response Interceptor: Handle 401 & Silent Token Renewal
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Check for 401 status and ensure no previous retry was attempted
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Set custom flag to prevent infinite loops
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        // Fetch new Access Token
+        const res = await axios.post('[https://api.example.com/refresh](https://api.example.com/refresh)', {
+          token: refreshToken,
+        });
+
+        const newAccessToken = res.data.accessToken;
+
+        // Save new token and update header
+        localStorage.setItem('accessToken', newAccessToken);
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        // Re-send original request with new token
+        return api(originalRequest);
+
+      } catch (refreshError) {
+        // Clear session and redirect if refresh fails
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+``` 
+![Refress Token](RefressToken.png)
