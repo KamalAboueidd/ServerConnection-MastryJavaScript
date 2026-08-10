@@ -688,3 +688,11 @@ function handleSearchInput(searchTerm) {
 handleSearchInput('K');     // Cancelled immediately
 handleSearchInput('Ka');    // Cancelled immediately
 handleSearchInput('Kamal'); // Successfully resolves
+```
+
+ # debounce 
+ - Debouncing is a programming technique that helps to improve the performance of web applications by limiting the frequency of function calls. 
+
+ - Debouncing is a way of delaying the execution of a function until a certain amount of time has passed since the last time it was called. This can be useful for scenarios where we want to avoid unnecessary or repeated function calls that might be expensive or time-consuming.
+
+ ![Debouncing](Debounce.webp)

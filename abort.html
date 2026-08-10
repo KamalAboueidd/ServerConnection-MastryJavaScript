@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AbortController Demo</title>
+  </head>
+  <body>
+    <button id="loadDataBtn">Load Data</button>
+    <button id="abortFetchBtn">Abort Fetch</button>
+
+    <script>
+      let controller = null; 
+
+      const loadBtn = document.getElementById("loadDataBtn");
+      const abortBtn = document.getElementById("abortFetchBtn");
+
+      const getData = (abortSignal) => {
+        fetch("https://jsonplaceholder.typicode.com/photos", { signal: abortSignal })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Data Loaded Successfully:", data.slice(0, 5));
+          })
+          .catch((error) => {
+            if (error.name === "AbortError") {
+              console.log(" Request was aborted by user!");
+            } else {
+              console.error(" Error occurred:", error);
+            }
+          });
+      };
+
+      loadBtn.addEventListener("click", () => {
+  
+        if (controller) { // if found fetch before abort this fetch
+          controller.abort();
+        }
+
+        controller = new AbortController();
+
+      
+        getData(controller.signal);
+        
+      });
+      abortBtn.addEventListener("click", () => {
+        if (controller) {
+          controller.abort();
+        }
+      });
+    </script>
+  </body>
+</html>
