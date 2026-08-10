@@ -617,7 +617,6 @@ fetchWithTimeout();
 
  ```js 
 
-
  const cdnServer1 = () => 
   new Promise((_, reject) => setTimeout(() => reject("CDN 1 Down"), 500));
 
@@ -672,7 +671,7 @@ function handleSearchInput(searchTerm) {
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log('✅ Search Results:', data);
+      console.log(' Search Results:', data);
     })
     .catch((error) => {
       // 3. Gracefully handle AbortError without alerting the user
