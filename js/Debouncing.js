@@ -9,7 +9,7 @@ function debounce(fn, delay = 500) {
   };
 }
 function fetchSearchResults(query) {
-  console.log(`📡 Sending API Request for: "${query}"`);
+  console.log(` Sending API Request for: "${query}"`);
 }
 //    link to Search Input
 const debouncedSearch = debounce(fetchSearchResults, 500);
